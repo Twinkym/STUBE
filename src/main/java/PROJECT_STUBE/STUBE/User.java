@@ -1,30 +1,40 @@
 package PROJECT_STUBE.STUBE;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+@Entity(name="users")
 public class User {
 
-    private long uuid = UUID.randomUUID().getMostSignificantBits();
-    private String userName;
+    @Id
+    private String id = UUID.randomUUID().toString();
+    private String name;
     private String email;
     private String password;
-    private List<Video> videos = new ArrayList<>();
+    @OneToMany(mappedBy = "user")
+    private List<Video> videoList = new ArrayList<>();
 
     public User(){
 
     }
 
-    public User(String userName, String email, String password) throws Exception{
+    public User(String name, String email, String password) throws Exception{
         checkPass(password);
         checkEmail(email);
+        checkName(name);
         this.password = password;
         this.email = email;
-        this.userName = userName;
+        this.name = name;
+    }
+
+    private void checkName(String name) throws Exception {
+        if (!name.trim().matches("^[A-Za-z0-9]{5,20}$"))throw new Exception("The user name must have between 5 & 20 characters & must be made up of alphanumeric characters. ");
     }
 
     private void checkEmail(String email) throws Exception {
@@ -45,35 +55,66 @@ public class User {
         return (password.length() < 7 || !password.matches(".*\\d.*"));
     }
 
-   public String getUserName(){
-        return userName;
+   public String getName(){
+        return name;
    }
 
    public String getPassword(String password){
         return this.password;
    }
 
-    public long getUuid() {
-        return uuid;
+    public String getId() {
+        return id;
     }
 
-    public List<Video> getVideos(Video newVideo){
-        return videos;
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public List<Video> getVideoList(){
+        return videoList;
    }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public Video addVideo(Video video) {
+        video.setUser(this);
+        this.videoList.add(video);
+        return video;
     }
 
-    public void setPassword(String password) {
+    public void deleteVideoList() {
+        this.videoList.clear();
+    }
+
+    public Video searchVideo(String videoId) throws Exception {
+        for (Video currentVideo : videoList) {
+            if (currentVideo.getId().equals(videoId)){
+                return currentVideo;
+            }
+        }
+        throw new Exception("Video not found. ");
+    }
+
+    public void setName(String name) throws Exception {
+        checkName(name);
+        this.name = name;
+    }
+
+    public void setPassword(String password) throws Exception {
+        checkPass(password);
         this.password = password;
     }
 
-    public void setVideos(List<Video> videos) {
-        this.videos = videos;
+    public void setVideoList(List<Video> videoList) {
+        this.videoList = videoList;
     }
 
     public String getPassword() {
         return password;
     }
+
+
 }
